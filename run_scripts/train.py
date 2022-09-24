@@ -7,19 +7,21 @@ import numpy as np
 import pytz
 import ray
 from ray import tune
-from ray.rllib.agents.registry import get_agent_class
+from ray.rllib.agents.a3c import A3CTrainer
+from ray.rllib.agents.impala import ImpalaTrainer
+from ray.rllib.agents.ppo import PPOTrainer
+from ray.rllib.algorithms.registry import get_algorithm_class
 from ray.rllib.models import ModelCatalog
 from ray.tune import Experiment
 from ray.tune.registry import register_env
 from ray.tune.schedulers import PopulationBasedTraining
 
-from algorithms.a3c_baseline import build_a3c_baseline_trainer
 from algorithms.a3c_moa import build_a3c_moa_trainer
-from algorithms.impala_baseline import build_impala_baseline_trainer
-from algorithms.impala_moa import build_impala_moa_trainer
-from algorithms.ppo_baseline import build_ppo_baseline_trainer
-from algorithms.ppo_moa import build_ppo_moa_trainer
-from algorithms.ppo_scm import build_ppo_scm_trainer
+
+# from algorithms.impala_baseline import build_impala_baseline_trainer
+# from algorithms.impala_moa import build_impala_moa_trainer
+# from algorithms.ppo_moa import build_ppo_moa_trainer
+# from algorithms.ppo_scm import build_ppo_scm_trainer
 from models.baseline_model import BaselineModel
 from models.moa_model import MOAModel
 from models.scm_model import SocialCuriosityModule
@@ -67,11 +69,11 @@ def build_experiment_config_dict(args):
     def policy_mapping_fn(agent_id):
         return agent_id
 
-    agent_cls = get_agent_class(args.algorithm)
-    config = copy.deepcopy(agent_cls._default_config)
+    agent_cls = get_algorithm_class(args.algorithm)
+    config = copy.deepcopy(agent_cls.get_default_config())
 
     config["env"] = env_name
-    config["eager"] = args.eager_mode
+    # config["eager"] = args.eager_mode
 
     # information for replay
     config["env_config"]["func_create"] = env_creator
@@ -120,7 +122,7 @@ def build_experiment_config_dict(args):
                 "use_lstm": False,
                 "conv_filters": conv_filters,
                 "fcnet_hiddens": fcnet_hiddens,
-                "custom_options": {
+                "custom_model_config": {
                     "cell_size": lstm_cell_size,
                     "num_other_agents": args.num_agents - 1,
                 },
@@ -129,7 +131,7 @@ def build_experiment_config_dict(args):
     )
 
     if args.model != "baseline":
-        config["model"]["custom_options"].update(
+        config["model"]["custom_model_config"].update(
             {
                 "moa_loss_weight": args.moa_loss_weight,
                 "influence_reward_clip": 10,
@@ -144,7 +146,7 @@ def build_experiment_config_dict(args):
         )
 
     if args.model == "scm":
-        config["model"]["custom_options"].update(
+        config["model"]["custom_model_config"].update(
             {
                 "scm_loss_weight": args.scm_loss_weight,
                 "curiosity_reward_clip": 10,
@@ -187,9 +189,9 @@ def get_trainer(args, config):
     """
     if args.model == "baseline":
         if args.algorithm == "A3C":
-            trainer = build_a3c_baseline_trainer(config)
+            trainer = A3CTrainer(config)
         if args.algorithm == "PPO":
-            trainer = build_ppo_baseline_trainer(config)
+            trainer = PPOTrainer(config)
         if args.algorithm == "IMPALA":
             trainer = build_impala_baseline_trainer(config)
     elif args.model == "moa":
@@ -334,7 +336,7 @@ def create_hparam_tune_dict(model, is_config=False):
 
     hparam_dict = {
         **baseline_options,
-        "model": {"custom_options": model_options},
+        "model": {"custom_model_config": model_options},
     }
     return hparam_dict
 

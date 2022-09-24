@@ -6,7 +6,7 @@ from ray.rllib.utils.annotations import override
 
 from algorithms.common_funcs_baseline import BaselineResetConfigMixin
 
-tf = try_import_tf()
+tf1, tf, version = try_import_tf()
 
 MOA_PREDS = "moa_preds"
 OTHERS_ACTIONS = "others_actions"
@@ -24,7 +24,7 @@ POLICY_SCOPE = "func"
 
 class InfluenceScheduleMixIn(object):
     def __init__(self, config):
-        config = config["model"]["custom_options"]
+        config = config["model"]["custom_model_config"]
         self.baseline_influence_reward_weight = config["influence_reward_weight"]
         if any(
             config[key] is None
@@ -221,7 +221,7 @@ def moa_fetches(policy):
 
 class MOAConfigInitializerMixIn(object):
     def __init__(self, config):
-        config = config["model"]["custom_options"]
+        config = config["model"]["custom_model_config"]
         self.num_other_agents = config["num_other_agents"]
         self.moa_loss_weight = tf.get_variable(
             "moa_loss_weight", initializer=config["moa_loss_weight"], trainable=False
@@ -235,7 +235,7 @@ class MOAConfigInitializerMixIn(object):
 class MOAResetConfigMixin(object):
     @staticmethod
     def reset_policies(policies, new_config, session):
-        custom_options = new_config["model"]["custom_options"]
+        custom_options = new_config["model"]["custom_model_config"]
         for policy in policies:
             policy.moa_loss_weight.load(custom_options["moa_loss_weight"], session=session)
             policy.compute_influence_reward_weight = lambda: custom_options[
@@ -278,6 +278,6 @@ def get_moa_mixins():
 
 
 def validate_moa_config(config):
-    config = config["model"]["custom_options"]
+    config = config["model"]["custom_model_config"]
     if config["influence_reward_weight"] < 0:
         raise ValueError("Influence reward weight must be >= 0.")

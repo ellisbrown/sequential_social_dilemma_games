@@ -83,7 +83,8 @@ class CleanupEnv(MapEnv):
 
     @property
     def action_space(self):
-        return DiscreteWithDType(9, dtype=np.uint8)
+        # return DiscreteWithDType(9, dtype=np.uint8)
+        return DiscreteWithDType(9, dtype=np.int64)
 
     def custom_reset(self):
         """Initialize the walls and the waste"""

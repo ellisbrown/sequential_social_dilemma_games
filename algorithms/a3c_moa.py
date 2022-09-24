@@ -2,16 +2,17 @@
 
 from __future__ import absolute_import, division, print_function
 
-from ray.rllib.agents.a3c.a3c import validate_config
-from ray.rllib.agents.a3c.a3c_tf_policy import postprocess_advantages
-from ray.rllib.agents.trainer_template import build_trainer
-from ray.rllib.evaluation.postprocessing import Postprocessing
+from ray.rllib.agents.a3c import A3CTrainer
+from ray.rllib.evaluation.postprocessing import Postprocessing, compute_gae_for_sample_batch
 from ray.rllib.policy.sample_batch import SampleBatch
-from ray.rllib.policy.tf_policy import LearningRateSchedule
+
+# from ray.rllib.policy.torch_policy_template import build_torch_policy
 from ray.rllib.policy.tf_policy_template import build_tf_policy
+from ray.rllib.policy.torch_mixins import LearningRateSchedule, ValueNetworkMixin
+
+# from ray.rllib.utils import try_import_torch
 from ray.rllib.utils import try_import_tf
-from ray.rllib.utils.explained_variance import explained_variance
-from ray.rllib.utils.tf_ops import make_tf_callable
+from ray.rllib.utils.torch_utils import explained_variance
 
 from algorithms.common_funcs_moa import (
     EXTRINSIC_REWARD,
@@ -23,7 +24,8 @@ from algorithms.common_funcs_moa import (
     setup_moa_mixins,
 )
 
-tf = try_import_tf()
+# torch, nn = try_import_torch()
+tf1, tf, version = try_import_tf()
 
 
 class A3CLoss(object):
@@ -52,7 +54,7 @@ def postprocess_a3c_moa(policy, sample_batch, other_agent_batches=None, episode=
     """Adds the policy logits, VF preds, and advantages to the trajectory."""
 
     batch = moa_postprocess_trajectory(policy, sample_batch)
-    batch = postprocess_advantages(policy, batch)
+    batch = compute_gae_for_sample_batch(policy, batch)
     return batch
 
 
@@ -82,25 +84,6 @@ def add_value_function_fetch(policy):
     fetch = {SampleBatch.VF_PREDS: policy.model.value_function()}
     fetch.update(moa_fetches(policy))
     return fetch
-
-
-class ValueNetworkMixin(object):
-    def __init__(self):
-        @make_tf_callable(self.get_session())
-        def value(ob, prev_action, prev_reward, *state):
-            model_out, _ = self.model(
-                {
-                    SampleBatch.CUR_OBS: tf.convert_to_tensor([ob]),
-                    SampleBatch.PREV_ACTIONS: tf.convert_to_tensor([prev_action]),
-                    SampleBatch.PREV_REWARDS: tf.convert_to_tensor([prev_reward]),
-                    "is_training": tf.convert_to_tensor(False),
-                },
-                [tf.convert_to_tensor([s]) for s in state],
-                tf.convert_to_tensor([1]),
-            )
-            return self.model.value_function()[0]
-
-        self._value = value
 
 
 def stats(policy, train_batch):
@@ -144,12 +127,12 @@ def setup_mixins(policy, obs_space, action_space, config):
 
 
 def build_a3c_moa_trainer(moa_config):
-    tf.keras.backend.set_floatx("float32")
     trainer_name = "MOAA3CTrainer"
     moa_config["use_gae"] = False
 
-    a3c_tf_policy = build_tf_policy(
-        name="A3CAuxTFPolicy",
+    # recreate the above in ray 2.0 with pytorch
+    a3c_policy = build_tf_policy(
+        name="A3CAuxTorchPolicy",
         get_default_config=lambda: moa_config,
         loss_fn=actor_critic_loss,
         stats_fn=stats,
@@ -161,11 +144,10 @@ def build_a3c_moa_trainer(moa_config):
         mixins=[ValueNetworkMixin, LearningRateSchedule] + get_moa_mixins(),
     )
 
-    trainer = build_trainer(
+    trainer = A3CTrainer.with_updates(
         name=trainer_name,
-        default_policy=a3c_tf_policy,
+        default_policy=a3c_policy,
         default_config=moa_config,
-        validate_config=validate_config,
     )
 
     return trainer

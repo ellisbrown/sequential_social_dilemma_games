@@ -34,7 +34,7 @@ from algorithms.common_funcs_moa import (
     validate_moa_config,
 )
 
-tf = try_import_tf()
+tf1, tf, version = try_import_tf()
 
 POLICY_SCOPE = "func"
 

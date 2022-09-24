@@ -1,10 +1,10 @@
 import numpy as np
 from ray.rllib.models.modelv2 import ModelV2
-from ray.rllib.models.tf.recurrent_tf_modelv2 import RecurrentTFModelV2
+from ray.rllib.models.tf.recurrent_net import RecurrentNetwork as RecurrentTFModelV2
 from ray.rllib.utils import try_import_tf
 from ray.rllib.utils.annotations import override
 
-tf = try_import_tf()
+tf1, tf, version = try_import_tf()
 
 
 class MoaLSTM(RecurrentTFModelV2):

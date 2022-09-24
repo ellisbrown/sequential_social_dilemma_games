@@ -1,7 +1,7 @@
 import sys
 
 from ray.rllib.models.modelv2 import ModelV2
-from ray.rllib.models.tf.recurrent_tf_modelv2 import RecurrentTFModelV2
+from ray.rllib.models.tf.recurrent_net import RecurrentNetwork as RecurrentTFModelV2
 from ray.rllib.policy.rnn_sequencing import add_time_dimension
 from ray.rllib.utils import try_import_tf
 from ray.rllib.utils.annotations import override
@@ -10,7 +10,7 @@ from models.actor_critic_lstm import ActorCriticLSTM
 from models.common_layers import build_conv_layers, build_fc_layers
 from models.moa_lstm import MoaLSTM
 
-tf = try_import_tf()
+tf1, tf, version = try_import_tf()
 
 
 class MOAModel(RecurrentTFModelV2):
@@ -35,8 +35,8 @@ class MOAModel(RecurrentTFModelV2):
         # shared info about the visibility of agents.
         # Currently we assume all the agents have equally sized action spaces.
         self.num_outputs = num_outputs
-        self.num_other_agents = model_config["custom_options"]["num_other_agents"]
-        self.influence_divergence_measure = model_config["custom_options"][
+        self.num_other_agents = model_config["custom_model_config"]["num_other_agents"]
+        self.influence_divergence_measure = model_config["custom_model_config"][
             "influence_divergence_measure"
         ]
 
@@ -58,7 +58,7 @@ class MOAModel(RecurrentTFModelV2):
         # now output two heads, one for action selection and one for the prediction of other agents
         inner_obs_space = self.moa_encoder_model.output_shape[0][-1]
 
-        cell_size = model_config["custom_options"].get("cell_size")
+        cell_size = model_config["custom_model_config"].get("cell_size")
         self.actions_model = ActorCriticLSTM(
             inner_obs_space,
             action_space,
@@ -70,13 +70,13 @@ class MOAModel(RecurrentTFModelV2):
 
         # predicts the actions of all the agents besides itself
         # create a new input reader per worker
-        self.train_moa_only_when_visible = model_config["custom_options"][
+        self.train_moa_only_when_visible = model_config["custom_model_config"][
             "train_moa_only_when_visible"
         ]
-        self.influence_only_when_visible = model_config["custom_options"][
+        self.influence_only_when_visible = model_config["custom_model_config"][
             "influence_only_when_visible"
         ]
-        self.moa_weight = model_config["custom_options"]["moa_loss_weight"]
+        self.moa_weight = model_config["custom_model_config"]["moa_loss_weight"]
 
         self.moa_model = MoaLSTM(
             inner_obs_space,

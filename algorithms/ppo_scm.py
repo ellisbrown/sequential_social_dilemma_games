@@ -35,7 +35,7 @@ from algorithms.ppo_moa import (
     validate_moa_config,
 )
 
-tf = try_import_tf()
+tf1, tf, version = try_import_tf()
 
 
 def loss_with_scm(policy, model, dist_class, train_batch):

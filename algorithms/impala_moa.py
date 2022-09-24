@@ -38,7 +38,7 @@ from algorithms.common_funcs_moa import (
 MOA_CONFIG = DEFAULT_CONFIG
 
 
-tf = try_import_tf()
+tf1, tf, version = try_import_tf()
 
 logger = logging.getLogger(__name__)
 

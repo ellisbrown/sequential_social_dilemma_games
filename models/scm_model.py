@@ -5,7 +5,7 @@ from ray.rllib.utils.framework import get_activation_fn
 
 from models.moa_model import MOAModel
 
-tf = try_import_tf()
+tf1, tf, version = try_import_tf()
 
 
 class SocialCuriosityModule(MOAModel):
@@ -33,7 +33,7 @@ class SocialCuriosityModule(MOAModel):
             self.register_variables(model.variables)
             model.summary()
 
-        self.scm_loss_weight = model_config["custom_options"]["scm_loss_weight"]
+        self.scm_loss_weight = model_config["custom_model_config"]["scm_loss_weight"]
 
     @staticmethod
     def create_scm_encoder_model(obs_space, model_config):
@@ -145,7 +145,7 @@ class SocialCuriosityModule(MOAModel):
 
     @staticmethod
     def create_lstm_input_layer(model_config):
-        cell_size = model_config["custom_options"].get("cell_size")
+        cell_size = model_config["custom_model_config"].get("cell_size")
         return tf.keras.layers.Input(shape=cell_size, name="lstm_input")
 
     @staticmethod
