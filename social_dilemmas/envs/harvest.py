@@ -100,7 +100,7 @@ class HarvestEnv(MapEnv):
                 num_apples = 0
                 for j in range(-APPLE_RADIUS, APPLE_RADIUS + 1):
                     for k in range(-APPLE_RADIUS, APPLE_RADIUS + 1):
-                        if j ** 2 + k ** 2 <= APPLE_RADIUS:
+                        if j**2 + k**2 <= APPLE_RADIUS:
                             x, y = self.apple_points[i]
                             if (
                                 0 <= x + j < self.world_map.shape[0]
