@@ -193,7 +193,7 @@ def get_trainer(args, config):
         if args.algorithm == "PPO":
             trainer = PPOTrainer
         if args.algorithm == "IMPALA":
-            trainer = build_impala_baseline_trainer(config)
+            trainer = ImpalaTrainer
     elif args.model == "moa":
         if args.algorithm == "A3C":
             trainer = build_a3c_moa_trainer(config)
@@ -294,11 +294,7 @@ def create_experiment(args):
     config = build_experiment_config_dict(args)
     trainer = get_trainer(args=args, config=config)
     experiment_dict = build_experiment_dict(args, experiment_name, trainer, config)
-    # import pprint
-    # pretty = pprint.PrettyPrinter(indent=4)
-    # pretty.pprint(experiment_dict)
-    # import pdb
-    # pdb.set_trace()
+    
     return Experiment(**experiment_dict)
 
 
