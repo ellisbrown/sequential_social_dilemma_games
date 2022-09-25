@@ -189,7 +189,7 @@ def get_trainer(args, config):
     """
     if args.model == "baseline":
         if args.algorithm == "A3C":
-            trainer = A3CTrainer(config)
+            trainer = A3CTrainer
         if args.algorithm == "PPO":
             trainer = PPOTrainer
         if args.algorithm == "IMPALA":
