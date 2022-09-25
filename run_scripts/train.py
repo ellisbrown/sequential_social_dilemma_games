@@ -167,7 +167,7 @@ def build_experiment_config_dict(args):
                 "num_sgd_iter": 10,
                 "sgd_minibatch_size": args.ppo_sgd_minibatch_size
                 if args.ppo_sgd_minibatch_size is not None
-                else train_batch_size / 4,
+                else train_batch_size // 4,
                 "vf_loss_coeff": 1e-4,
                 "vf_share_layers": True,
             }
@@ -191,7 +191,7 @@ def get_trainer(args, config):
         if args.algorithm == "A3C":
             trainer = A3CTrainer(config)
         if args.algorithm == "PPO":
-            trainer = PPOTrainer(config)
+            trainer = PPOTrainer
         if args.algorithm == "IMPALA":
             trainer = build_impala_baseline_trainer(config)
     elif args.model == "moa":
@@ -231,10 +231,9 @@ def initialize_ray(args):
     ray.init(
         address=args.address,
         local_mode=args.local_mode,
-        memory=args.memory,
+        _memory=args.memory,
         object_store_memory=args.object_store_memory,
-        redis_max_memory=args.redis_max_memory,
-        include_webui=False,
+        _redis_max_memory=args.redis_max_memory,
     )
 
 
@@ -295,6 +294,11 @@ def create_experiment(args):
     config = build_experiment_config_dict(args)
     trainer = get_trainer(args=args, config=config)
     experiment_dict = build_experiment_dict(args, experiment_name, trainer, config)
+    # import pprint
+    # pretty = pprint.PrettyPrinter(indent=4)
+    # pretty.pprint(experiment_dict)
+    # import pdb
+    # pdb.set_trace()
     return Experiment(**experiment_dict)
 
 
@@ -368,7 +372,6 @@ def run(args, experiments):
     scheduler = create_pbt_scheduler(args.model) if args.tune_hparams else None
     tune.run_experiments(
         experiments,
-        queue_trials=args.use_s3,
         resume=args.resume,
         scheduler=scheduler,
         reuse_actors=args.tune_hparams,
