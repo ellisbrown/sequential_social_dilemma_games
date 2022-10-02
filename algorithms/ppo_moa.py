@@ -158,12 +158,7 @@ def build_ppo_moa_trainer(moa_config):
     moa_ppo_trainer = PPOTrainer.with_updates(
         name=trainer_name,
         default_policy=moa_ppo_policy,
-        make_policy_optimizer=choose_policy_optimizer,
-        default_config=moa_config,
-        validate_config=validate_ppo_moa_config,
-        after_optimizer_step=update_kl,
-        after_train_result=warn_about_bad_reward_scales,
-        mixins=[MOAResetConfigMixin],
+        default_config=moa_config,        
     )
     
     return moa_ppo_trainer
