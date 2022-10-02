@@ -1,5 +1,5 @@
 import sys
-
+import tensorflow_probability as tfp
 from ray.rllib.models.modelv2 import ModelV2
 from ray.rllib.models.tf.recurrent_net import RecurrentNetwork as RecurrentTFModelV2
 from ray.rllib.policy.rnn_sequencing import add_time_dimension
@@ -315,9 +315,9 @@ class MOAModel(RecurrentTFModelV2):
         :return: The KL-divergence between x and y. Returns zeros if the KL-divergence contains NaN
         or Infinity.
         """
-        dist_x = tf.distributions.Categorical(probs=x)
-        dist_y = tf.distributions.Categorical(probs=y)
-        result = tf.distributions.kl_divergence(dist_x, dist_y)
+        dist_x = tfp.distributions.Categorical(probs=x)
+        dist_y = tfp.distributions.Categorical(probs=y)
+        result = tfp.distributions.kl_divergence(dist_x, dist_y)
 
         # Don't return nans or infs
         is_finite = tf.reduce_all(tf.is_finite(result))
