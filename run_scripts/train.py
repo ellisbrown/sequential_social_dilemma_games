@@ -20,7 +20,7 @@ from algorithms.a3c_moa import build_a3c_moa_trainer
 
 # from algorithms.impala_baseline import build_impala_baseline_trainer
 # from algorithms.impala_moa import build_impala_moa_trainer
-# from algorithms.ppo_moa import build_ppo_moa_trainer
+from algorithms.ppo_moa import build_ppo_moa_trainer
 # from algorithms.ppo_scm import build_ppo_scm_trainer
 from models.baseline_model import BaselineModel
 from models.moa_model import MOAModel
