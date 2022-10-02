@@ -164,6 +164,7 @@ def build_ppo_moa_trainer(moa_config):
         + get_moa_mixins(),
     )
     
-    moa_ppo_trainer = PPOTrainer(config=moa_config, policy_cls=moa_ppo_policy, name=trainer_name)
+    moa_ppo_trainer = PPOTrainer(config=moa_config)
+    moa_ppo_policy.add_policy(moa_ppo_policy)
     
     return moa_ppo_trainer
