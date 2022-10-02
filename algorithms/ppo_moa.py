@@ -3,7 +3,7 @@ from ray.rllib.agents.ppo import PPOTrainer
 # Import PPOLoss from ray.rllib.agents.ppo.ppo_tf_policy.py
 
 from algorithms.old_ppo_loss import PPOLoss
-from ray.rllib.agents.ppo import ppo_tf_policy
+from ray.rllib.agents.ppo.ppo import ppo_tf_policy
 from ray.rllib.evaluation.postprocessing import Postprocessing
 from ray.rllib.policy.sample_batch import SampleBatch
 from ray.rllib.policy.tf_mixins import EntropyCoeffSchedule, LearningRateSchedule, KLCoeffMixin, ValueNetworkMixin
