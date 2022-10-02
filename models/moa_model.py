@@ -141,7 +141,7 @@ class MOAModel(RecurrentTFModelV2):
 
         # Add time dimension to rnn inputs
         for k, v in rnn_input_dict.items():
-            rnn_input_dict[k] = add_time_dimension(v, seq_lens)
+            rnn_input_dict[k] = add_time_dimension(v,  max_seq_len=tf.reduce_max(seq_lens))
 
         output, new_state = self.forward_rnn(rnn_input_dict, state, seq_lens)
         action_logits = tf.reshape(output, [-1, self.num_outputs])
