@@ -182,8 +182,8 @@ class MOAModel(RecurrentTFModelV2):
         # that we will use for the next timestep's counterfactual predictions.
         prev_moa_trunk = input_dict["prev_moa_trunk"]
         other_actions = input_dict["other_agent_actions"]
-        agent_action = tf.cast(agent_action, tf.float32)
         agent_action = tf.expand_dims(input_dict["prev_actions"], axis=-1)
+        agent_action = tf.cast(agent_action, tf.float32)
         all_actions = tf.concat([agent_action, other_actions], axis=-1, name="concat_true_actions")
         self._true_one_hot_actions = self._reshaped_one_hot_actions(all_actions, "forward_one_hot")
         true_action_pass_dict = {
