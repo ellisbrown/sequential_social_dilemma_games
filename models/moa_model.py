@@ -52,7 +52,7 @@ class MOAModel(RecurrentTFModelV2):
         self._true_one_hot_actions = None
 
         self.moa_encoder_model = self.create_moa_encoder_model(obs_space, model_config)
-        self.register_variables(self.moa_encoder_model.variables)
+        # self.register_variables(self.moa_encoder_model.variables)
         self.moa_encoder_model.summary()
 
         # now output two heads, one for action selection and one for the prediction of other agents
@@ -86,8 +86,8 @@ class MOAModel(RecurrentTFModelV2):
             "moa_model",
             cell_size=cell_size,
         )
-        self.register_variables(self.actions_model.rnn_model.variables)
-        self.register_variables(self.moa_model.rnn_model.variables)
+        # self.register_variables(self.actions_model.rnn_model.variables)
+        # self.register_variables(self.moa_model.rnn_model.variables)
         self.actions_model.rnn_model.summary()
         self.moa_model.rnn_model.summary()
 
