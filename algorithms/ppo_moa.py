@@ -26,6 +26,18 @@ tf1, tf, version = try_import_tf()
 
 POLICY_SCOPE = "func"
 
+def clip_gradients(policy, optimizer, loss):
+    variables = policy.model.trainable_variables()
+    if policy.config["grad_clip"] is not None:
+        grads_and_vars = optimizer.compute_gradients(loss, variables)
+        grads = [g for (g, v) in grads_and_vars]
+        policy.grads, _ = tf.clip_by_global_norm(grads,
+                                                 policy.config["grad_clip"])
+        clipped_grads = list(zip(policy.grads, variables))
+        return clipped_grads
+    else:
+        return optimizer.compute_gradients(loss, variables)
+
 def loss_with_moa(policy, model, dist_class, train_batch):
     """
     Calculate PPO loss with MOA loss
@@ -141,7 +153,7 @@ def build_ppo_moa_trainer(moa_config):
         stats_fn=extra_moa_stats,
         extra_action_fetches_fn=extra_moa_fetches,
         postprocess_fn=postprocess_ppo_moa,
-        gradients_fn=ppo_tf_policy.clip_gradients,
+        gradients_fn=clip_gradients,
         before_init=ppo_tf_policy.setup_config,
         before_loss_init=setup_ppo_moa_mixins,
         mixins=[LearningRateSchedule, EntropyCoeffSchedule, KLCoeffMixin, ValueNetworkMixin]
