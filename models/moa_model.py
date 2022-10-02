@@ -320,7 +320,7 @@ class MOAModel(RecurrentTFModelV2):
         result = tfp.distributions.kl_divergence(dist_x, dist_y)
 
         # Don't return nans or infs
-        is_finite = tf.reduce_all(tf.is_finite(result))
+        is_finite = tf.reduce_all(tf.math.is_finite(result))
 
         def true_fn():
             return result
