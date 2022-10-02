@@ -38,6 +38,10 @@ def clip_gradients(policy, optimizer, loss):
     else:
         return optimizer.compute_gradients(loss, variables)
 
+def setup_config(policy, obs_space, action_space, config):
+    # auto set the model option for layer sharing
+    config["model"]["vf_share_layers"] = config["vf_share_layers"]
+
 def loss_with_moa(policy, model, dist_class, train_batch):
     """
     Calculate PPO loss with MOA loss
@@ -154,7 +158,7 @@ def build_ppo_moa_trainer(moa_config):
         extra_action_fetches_fn=extra_moa_fetches,
         postprocess_fn=postprocess_ppo_moa,
         gradients_fn=clip_gradients,
-        before_init=ppo_tf_policy.setup_config,
+        before_init=setup_config,
         before_loss_init=setup_ppo_moa_mixins,
         mixins=[LearningRateSchedule, EntropyCoeffSchedule, KLCoeffMixin, ValueNetworkMixin]
         + get_moa_mixins(),
